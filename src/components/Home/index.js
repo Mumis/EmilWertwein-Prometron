@@ -3,111 +3,70 @@ import { compose } from "recompose";
 import { withFirebase } from "../Firebase";
 import { Link } from 'react-router-dom';
 import * as ROUTES from '../../constants/routes';
-import Chat from '../Chat';
 import {
-  AuthUserContext,
-  withAuthorization,
-  withEmailVerification
+	AuthUserContext,
+	withAuthorization,
 } from "../Session";
 
-//import Chat from "../Chat";
 import Styled from "styled-components";
 import HomeMap from "../HomeMap";
-//import GameMap from "../GameMap";
 
-/*** STYLED COMPONENTS ***/
-const StyledFlexContainer = Styled.div`
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-    height: auto;
-    min-height: 492px;    
+const Wrapper = Styled.div`
+	position: relative;
+	height: 100vh;
+
+	div {
+		height: 100%;
+	}
 `;
 
-const StyledDivs = Styled.div`
-    flex-basis: 100%;    
-    text-align: center;    
+const EnterButton = Styled.p`
+	display: flex;
+	font-family: 'Ubuntu', sans-serif;
+	width: 100%;
+	position: absolute;
+	justify-content: center;
+	z-index: 9999;
+	bottom: 20px;
+	
+	a {
+		text-align: center;
+		width: 200px;
+		background-color: #333;
+		padding: 8px 0;
+		border-radius: 5px;
+		font-size: 14px;
+		text-decoration: none;
+		color: white;
+		transition: 0.3s;
+		
+		&:hover {
+			cursor: pointer;
+			transform: scale(1.05);
+		}
+	}
 `;
-
-const StyledH1 = Styled.h1`
-    font-family: 'Orbitron', sans-serif;
-    letter-spacing: -0.05em;
-    font-size: 2.5em;
-    background: rgb(239, 152, 44);
-    color: rgb(252, 252, 252);    
-    text-shadow: rgb(15, 15, 15) 0.5px 1.5px 0.5px;      
-    padding: 22px 0;
-    margin: auto;
-    border: 1px solid rgb(177,177,177);    
-    border-bottom: none;
-    cursor: pointer;   
-    &:hover {
-      background: rgb(35,35,35);
-      color: rgb(241, 153, 47);               
-    }
-    @media (max-width: 767px) {
-      font-size: 2em;
-    }
-    @media (max-width: 492px) {
-      font-size: 1.7em;
-    }
-`;
-
-const StyledMap = Styled.div`    
-    flex-basis: 100%;
-    border: 1px solid rgb(177,177,177);    
-    border-top: 1px solid rgb(252,252,252);
-`;
-/*
-const StyledChat = Styled.section`
-    flex-basis: 100%;
-    min-width: 332px;
-    min-height: 292px;
-    max-height: 500px;
-    padding: 12px;
-    border: 1px solid rgb(177,177,177);
-    border-top: none;
-    margin-bottom: 32px;
-    & h2 {
-        color: rgb(29, 134, 226);
-        text-shadow: 1px 1px 0.5px rgb(252,252,252);
-        margin-bottom: 12px;
-    }
-    @media (max-width: 767px) {
-        flex-basis: 100%;
-        padding: 12px;
-    }
-`;*/
-/*** END ***/
-
 
 const HomePage = props => (
-  <AuthUserContext.Consumer>
-    {authUser => (
-        <StyledFlexContainer>
-          
-          <StyledDivs>
-            <Link to={ROUTES.GAMEMENU}><StyledH1>Enter Game</StyledH1></Link>
-          </StyledDivs>
-
-          <StyledMap className="map-container">           
-            <HomeMap userId={authUser.uid} />
-          </StyledMap>
-
-          {/* <StyledChat> */}
-        <Chat />
-          {/* </StyledChat>           */}
-
-        </StyledFlexContainer>
-    )}
-  </AuthUserContext.Consumer>
+	<AuthUserContext.Consumer>
+		{authUser => (
+			<React.Fragment>
+				<Wrapper>
+					<HomeMap userId={authUser.uid}>
+					</ HomeMap>
+					<EnterButton>
+						<Link to={ROUTES.GAMEMENU}>Enter Game</Link>
+					</EnterButton>
+				</Wrapper>
+			</React.Fragment>
+		)}
+	</AuthUserContext.Consumer>
 );
 
 const condition = authUser => !!authUser;
 
 export default compose(
-  withFirebase,
-  withEmailVerification,
-  withAuthorization(condition)
+	withFirebase,
+	withAuthorization(condition)
 )(HomePage);
 

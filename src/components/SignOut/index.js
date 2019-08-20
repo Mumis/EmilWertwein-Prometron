@@ -14,7 +14,7 @@ const StyledButton = Styled.button`
 const SignOutButton = ({ firebase }) => (
     <StyledButton type="button" onClick={firebase.doSignOut}>
         Sign Out
-</StyledButton>
+    </StyledButton>
 );
 
 export default withFirebase(SignOutButton);

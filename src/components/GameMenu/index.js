@@ -3,445 +3,233 @@ import { withFirebase } from "../Firebase";
 import { compose } from "recompose";
 import { Link, Redirect } from "react-router-dom";
 import * as ROUTES from "../../constants/routes";
+
+import HomeMap from "../HomeMap";
+
 import {
-  AuthUserContext,
-  withAuthorization,
-  withEmailVerification
+	AuthUserContext,
+	withAuthorization,
 } from "../Session";
 
 import Styled from "styled-components";
 
-/*** STYLED COMPONENETS ***/
-const StyledFlexContainer = Styled.div`
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-    height: auto;
-    min-height: 492px;
-    background: rgb(47,47,47);  
-    background: transparent;  
-    color: rgb(237,237,237);  
-    color: rgb(77,77,77);  
+const Wrapper = Styled.div`
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+	height: 100vh;
+	background-image: linear-gradient( rgba(206,176,213,1) 0%, rgba(132,120,181,1) 90% );
+	
 `;
 
-const StyledMenu = Styled.div`
-    width: 206px;	
-    height: fit-content;
-	background-color: rgba(197,197,197, 0.7);	
-	font-size: 1.5em;
-	font-weight: 600;
-	text-align: center;
-	padding: 18px 10px 18px 10px;
-	margin: 4% auto 0;	
-	border: 2px solid rgba(197,197,197, 0.9);	
-	border-radius: 4%;
+const MapWrapper = Styled.div`
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	opacity: 0.3;
+	div {
+		height: 100%;
+		width: 100%;
+	}
 `;
 
-const StyledBackToMenu = Styled.div`
-    position: absolute; 
-    right: 0; 
-    top: 0; 	        
-    margin: 0 auto;
-    cursor: pointer;
-    background-color: rgba(255,255,255,1);
-    padding: 4px;
-    border: 1px solid rgb(77,77,77);    
-    text-align: center;
+const StyledButton = Styled.button`
+    font-family: 'Ubuntu', sans-serif;
+    background-color: #333;
+    border: none;
+    color: white;
+    padding: 8px 20px;
+    font-size: 14px;
+    border-radius: 5px;
+	margin: 5px 20px;
+	transition: transform .3s;
+	
+	&:hover {
+		cursor: pointer;
+		transform: scale(1.1);
+	}
 `;
 
-const StyledTitle = Styled.h1`   
-    font-family: 'Orbitron',sans-serif; 
-    color: rgb(154,154,154);    
+const ButtonWrapper = Styled.div`
+	display: flex;
+	position: absolute;
+	z-index: 9999;
 `;
-
-const StyledGameButton = Styled.button`
-    font-weight: 600;
-    background-color: transparent;
-    background-color: rgb(255,173,55);
-    color: rgb(245, 145, 57);
-    color: rgb(97,97,97);
-    padding: 7px;
-    margin-bottom: 12px;
-    &:hover {   
-        opacity: 0.9;  
-    }   
-`;
-
-// GAME LIST
-const StyledListTitle = Styled.h2`
-    font-family: 'Orbitron',sans-serif;
-    font-size: 1.95em;
-    font-weight: 600;
-    color: rgb(102,102,102);    
-    color: rgb(132, 132, 132);    
-    text-shadow: 1px 1px 0.5px rgb(252,252,252);
-    @media (max-width: 767px) {
-        font-size: 1.8;
-    }
-`;
-const StyledGameList = Styled.ul`
-    flex-basis: 100%;
-    text-align: center;
-    padding: 22px;
-`;
-const StyledGameLi = Styled.li`
-    width: 300px;
-    background-color: rgb(17,17,17);
-    color: rgb(255, 162, 19);
-    font-weight: 600;
-    list-style-type: none;
-    cursor: pointer;
-    padding: 6px;
-    margin: 0 auto;
-    border: 1px solid rgb(144,144,144);
-    &:hover {
-        opacity: 0.8;
-    }
-`;
-
-// Set up game
-const StyledSetGame = Styled.form`
-    padding: 22px;    
-`;
-const StyledCreateTitle = Styled.h2`
-    font-family: 'Orbitron',sans-serif;
-    font-size: 1.9em;
-    font-weight: 600;    
-    color: rgb(68, 109, 187);
-    text-shadow: 1px 1px 0.5px rgb(252,252,252);
-    @media (max-width: 767px) {
-        font-size: 1.8;
-    }
-`;
-const StyledSetSelect = Styled.div`
-    position: relative;
-    font-family: Arial;
-    padding: 4px 0;
-    & select {
-        cursor: pointer;
-        padding: 4px;
-        margin: 8px;
-        background-color: rgb(117,117,117);    
-        color: rgb(247,247,247);
-        border: 1px solid rgb(122,122,122);
-}`;
-const StyledSetLi = Styled.li`
-    list-style-type: none;
-    cursor: pointer;
-    padding: 4px 0;   
-    margin: 4px 0; 
-`;
-const StyledCreateGame = Styled.button`
-    background-color: rgb(0, 78, 171);
-    color: rgb(252,252,252);
-`;
-/*** END ***/
 
 class GameMenu extends Component {
-  state = {
-    Redirect: false,
-    parts: {
-      showBack: false,
-      showGameMenu: true,
-      showGameList: false,
-      showSetUpGame: false
-    }
-  };
+	state = {
+		redirect: true,
+	};
 
-  getGames = () => {
-    this.props.firebase
-      .games()
-      .once("value", snapshot => {
-        this.data = snapshot.val();
-      })
-      .then(() => {
-        this.setState({ currentGames: this.data });
-      });
-  };
+	componentDidMount() {
+		this.props.firebase
+			.user(this.props.authUser.uid)
+			.child("games")
+			.once("value", snapshot => {
+				this.isInGame = snapshot.val();
+			}).then(
+				!this.isInGame && this.setState({ redirect: false })
+			);
 
-  joinGame = event => {
-    const key = event.target.id;
-    const uid = this.props.authUser.uid;
-    const data = {
-      username: this.props.authUser.username,
-      path: [[0, 0]],
-      points: 0
-    };
+		this.getGames();
+	}
 
-    let updates = {};
-    
-    updates["/games/" + key + "/users/" + uid] = data;
-    updates["/games/" + key + "/presence/" + uid] = true;
-    updates["/users/" + uid + "/games/" + key] = true;
+	getGames = () => {
+		this.props.firebase
+			.games()
+			.once("value", snapshot => {
+				this.data = snapshot.val();
+			})
+			.then(() => {
+				this.setState({ currentGames: this.data });
+			});
+	};
 
-    this.props.firebase
-      .user(uid)
-      .child("games")
-      .remove();
-    this.props.firebase.db.ref().update(updates);
-    this.setState({ Redirect: true });
-  };
+	joinGame = event => {
+		const key = event.target.id;
+		const uid = this.props.authUser.uid;
+		const data = {
+			username: this.props.authUser.username,
+			path: [[0, 0]],
+			points: 0
+		};
 
-  createGame = event => {
-    const currentTime = Math.round(new Date().getTime() / 1000);
-    const key = this.props.firebase.db.ref("games").push().key;
-    const uid = this.props.authUser.uid;
+		let updates = {};
 
-    const data = {
-      name: this.state.name,
-      password: this.state.password,
-      game_area: parseInt(this.state.game_area),      
-      game_minutes: this.state.game_time,
-      game_time: currentTime + parseInt(this.state.game_time),
-      presence: {
-        [uid]: true
-      },
-      users: {
-        [uid]: {
-          username: this.props.authUser.username,
-          path: [[0, 0]],
-          points: 0
-        }
-      }      
-    };
+		updates["/games/" + key + "/users/" + uid] = data;
+		updates["/games/" + key + "/presence/" + uid] = true;
+		updates["/users/" + uid + "/games/" + key] = true;
 
-    // We get game time and call starttimer    
-    this.startTimer(this.state.game_time);
-    // END
+		this.props.firebase
+			.user(uid)
+			.child("games")
+			.remove();
+		this.props.firebase.db.ref().update(updates);
+		this.setState({ Redirect: true });
+	};
 
-    let updates = {};
+	createGame = event => {
+		const currentTime = Math.round(new Date().getTime() / 1000);
+		const key = this.props.firebase.db.ref("games").push().key;
+		const uid = this.props.authUser.uid;
 
-    updates["/games/" + key] = data;
-    updates["/users/" + uid + "/games/" + key] = true;
+		const data = {
+			name: this.state.name,
+			password: this.state.password,
+			game_area: parseInt(this.state.game_area),
+			game_minutes: this.state.game_time,
+			game_time: currentTime + parseInt(this.state.game_time),
+			presence: {
+				[uid]: true
+			},
+			users: {
+				[uid]: {
+					username: this.props.authUser.username,
+					path: [[0, 0]],
+					points: 0
+				}
+			}
+		};
 
-    this.props.firebase
-      .user(uid)
-      .child("games")
-      .remove();
-    this.props.firebase.db.ref().update(updates);
+		this.startTimer(this.state.game_time);
 
-    this.setState({
-      name: "",
-      password: "",
-      game_area: "",
-      game_time: "",
-      Redirect: true
-    });
+		let updates = {};
 
-    event.preventDefault();
-  };
+		updates["/games/" + key] = data;
+		updates["/users/" + uid + "/games/" + key] = true;
+
+		this.props.firebase
+			.user(uid)
+			.child("games")
+			.remove();
+		this.props.firebase.db.ref().update(updates);
+
+		this.setState({
+			name: "",
+			password: "",
+			game_area: "",
+			game_time: "",
+			Redirect: true
+		});
+
+		event.preventDefault();
+	};
+
+	startTimer(duration) {
+		var timer = duration,
+			minutes,
+			seconds;
+		setInterval(function () {
+			minutes = parseInt(timer / 60, 10);
+			seconds = parseInt(timer % 60, 10);
+
+			minutes = minutes < 10 ? "0" + minutes : minutes;
+			seconds = seconds < 10 ? "0" + seconds : seconds;
+
+			console.log(minutes + ":" + seconds);
+			if (--timer < 0) {
+				timer = duration;
+			}
+		}, 1000);
+	}
+
+	onChange = event => {
+
+	};
+
+	MenuState = e => {
+		let targetId = e.target.id;
+		targetId === "join" ? this.setState({ menuState: "join" }) : this.setState({ menuState: "create" })
+	};
 
 
-  // Calculate time count down with argument duration from state
-  startTimer(duration) {
-    var timer = duration,
-      minutes,
-      seconds;
-    setInterval(function() {
-      minutes = parseInt(timer / 60, 10);
-      seconds = parseInt(timer % 60, 10);
 
-      minutes = minutes < 10 ? "0" + minutes : minutes;
-      seconds = seconds < 10 ? "0" + seconds : seconds;
+	render() {
+		if (this.state.Redirect) {
+			return <Redirect push to="/game" />;
+		}
 
-      console.log(minutes + ":" + seconds);      
-      if (--timer < 0) {
-        timer = duration;
-      }
-    }, 1000);    
-  }
+		return (
+			<AuthUserContext.Consumer>
+				{authUser => (
+					<Wrapper>
+						<MapWrapper>
+							<HomeMap userId={authUser.uid} >
+							</ HomeMap>
+						</MapWrapper>
+						
+						{this.state.menuState == null ?
+							<React.Fragment>
+								<ButtonWrapper>
+									<StyledButton onClick={this.MenuState} id="join">JOIN GAME</StyledButton>
+									<StyledButton onClick={this.MenuState} id="create">CREATE GAME</StyledButton>
+								</ButtonWrapper>
+							</React.Fragment>
+							: null}
 
+						{this.state.menuState === "join" ?
+							<React.Fragment>
+								
+								join
+							</React.Fragment>
+							: null}
 
-  componentWillMount() {
-    this.checkIfUserInGame();
-  }
-
-  checkIfUserInGame = () => {
-    this.props.firebase
-      .user(this.props.authUser.uid)
-      .child("games")
-      .once("value", snapshot => {
-        this.isInGame = snapshot.val();
-      });
-    if (this.isInGame !== null) {
-      this.setState({ Redirect: true });
-    }
-  };
-
-  onChange = event => {
-    this.setState({
-      [event.target.name]: event.target.value
-    });
-  };
-
-  // Manages all changes of state on page
-  showParts = e => {
-    let trg = e.target.id;
-
-    if (trg === "back-btn") {
-      this.setState({
-        parts: {
-          showBack: false,
-          showGameMenu: true,
-          showGameList: false,
-          showSetUpGame: false
-        }
-      });
-    } else if (trg === "join-game") {
-      this.setState({
-        parts: {
-          showGameList: true,
-          showGameMenu: false,
-          showBack: true
-        }
-      });
-      this.setState({
-        part: "join"
-      });
-    } else if (trg === "create-game") {
-      this.setState({
-        parts: {
-          showSetUpGame: true,
-          showGameMenu: false,
-          showBack: true
-        }
-      });
-    }
-  };
-
-  render() {
-    if (this.state.Redirect) {
-      return <Redirect push to="/game" />;
-    }
-
-    return (
-      <AuthUserContext.Consumer>
-        {authUser => (
-          <StyledFlexContainer>
-            {this.state.parts.showGameMenu ? (
-              <StyledMenu onClick={this.showParts}>
-                <StyledTitle>MENU</StyledTitle>
-                <br />
-                <StyledGameButton id="join-game" onClick={this.getGames}>
-                  Join Game
-                </StyledGameButton>
-                <br />
-                <StyledGameButton id="create-game" onClick={this.getGames}>
-                  Create Game
-                </StyledGameButton>
-                <br />
-              </StyledMenu>
-            ) : null}
-
-            {this.state.parts.showBack ? (
-              <StyledBackToMenu id="back-btn" onClick={this.showParts}>
-                Back to Menu
-              </StyledBackToMenu>
-            ) : null}
-
-            {this.state.parts.showGameList ? (
-              <StyledGameList>
-                <br />
-                <StyledListTitle>GAME FINDER</StyledListTitle>
-                <br />
-                {this.state.currentGames != null
-                  ? Object.keys(this.state.currentGames).map(gameId => (
-                      <StyledGameLi id={gameId} onClick={this.joinGame}>
-                        {this.state.currentGames[gameId].name}
-                      </StyledGameLi>
-                    ))
-                  : null}
-                <br />
-              </StyledGameList>
-            ) : null}
-
-            {this.state.parts.showSetUpGame ? (
-              <StyledSetGame onSubmit={this.createGame}>
-                <br />
-                <StyledCreateTitle>SET UP GAME</StyledCreateTitle>
-                <br />
-                <StyledSetSelect>
-                  Game Area
-                  <select
-                    name="game_area"
-                    onChange={this.onChange}
-                    value={this.state.game_area}
-                  >
-                    <option id="time1" value="1">
-                      {" "}
-                      Radius: 1 km
-                    </option>
-                    <option id="time2" value="2">
-                      {" "}
-                      Radius: 2 km
-                    </option>
-                    <option id="time3" value="3">
-                      {" "}
-                      Radius: 3 km
-                    </option>
-                    <option id="time4" value="4">
-                      {" "}
-                      Radius: 4 km
-                    </option>
-                  </select>
-                </StyledSetSelect>
-                <StyledSetSelect>
-                  Set Game Time
-                  <select
-                    name="game_time"
-                    onChange={this.onChange}
-                    value={this.state.game_time}
-                  >
-                    <option value="3600"> 1 Hour</option>
-                    <option value="7200"> 2 Hour</option>
-                    <option value="10800"> 3 Hour</option>
-                    <option value="14400"> 4 Hour</option>
-                    <option value="18000"> 5 Hour</option>
-                  </select>
-                </StyledSetSelect>
-                <StyledSetLi>
-                  Give the game a name{" "}
-                  <input
-                    type="text"
-                    onChange={this.onChange}
-                    value={this.state.name}
-                    name="name"
-                    minLength="3"
-                    maxLength="15"
-                  />
-                </StyledSetLi>
-                <StyledSetLi>
-                  Password for your game{" "}
-                  <input
-                    type="text"
-                    onChange={this.onChange}
-                    value={this.state.password}
-                    name="password"
-                  />
-                </StyledSetLi>
-                <br />
-
-                <Link to={ROUTES.HOME}>
-                  <StyledCreateGame onClick={this.createGame}>
-                    Create Game
-                  </StyledCreateGame>
-                </Link>
-                <br />
-              </StyledSetGame>
-            ) : null}
-          </StyledFlexContainer>
-        )}
-      </AuthUserContext.Consumer>
-    );
-  }
+						{this.state.menuState === "create" ?
+							<React.Fragment>
+								create
+							</React.Fragment>
+							: null}
+					</Wrapper>
+				)}
+			</AuthUserContext.Consumer>
+		);
+	}
 }
 
 const condition = authUser => !!authUser;
 
-
 export default compose(
-  withFirebase,
-  withEmailVerification,
-  withAuthorization(condition)
+	withFirebase,
+	withAuthorization(condition)
 )(GameMenu);

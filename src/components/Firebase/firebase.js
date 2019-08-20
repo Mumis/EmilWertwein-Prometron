@@ -3,12 +3,13 @@ import 'firebase/auth';
 import 'firebase/database';
 
 const config = {
-    apiKey: process.env.REACT_APP_API_KEY,
-    authDomain: process.env.REACT_APP_AUTH_DOMAIN,
-    databaseURL: process.env.REACT_APP_DATABASE_URL,
-    projectId: process.env.REACT_APP_PROJECT_ID,
-    storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
-    messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+    apiKey: "AIzaSyDfxwCxMNSncSEkilhmOrt8YCNSD7Pe1IQ",
+    authDomain: "emilwertwein-prometron.firebaseapp.com",
+    databaseURL: "https://emilwertwein-prometron.firebaseio.com",
+    projectId: "emilwertwein-prometron",
+    storageBucket: "",
+    messagingSenderId: "149401246662",
+    appId: "1:149401246662:web:07bcc31b6ff835f7"
 };
 
 class Firebase {
@@ -21,17 +22,11 @@ class Firebase {
         this.db = app.database();
         this.serverValue = app.database.ServerValue;
 
-        
         this.googleProvider = new app.auth.GoogleAuthProvider();
         this.facebookProvider = new app.auth.FacebookAuthProvider();
     }
     
     // *** Auth API ***
-    
-    doSendEmailVerification = () =>
-    this.auth.currentUser.sendEmailVerification({
-        url: process.env.REACT_APP_CONFIRMATION_EMAIL_REDIRECT,
-    });
     
     doCreateUserWithEmailAndPassword = (email, password) =>
     this.auth.createUserWithEmailAndPassword(email, password);

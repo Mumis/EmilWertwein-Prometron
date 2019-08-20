@@ -2,88 +2,148 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'recompose';
 import { SignUpLink } from '../SignUp';
-import { PasswordForgetLink } from '../PasswordForget';
 import { withFirebase } from '../Firebase';
 import * as ROUTES from '../../constants/routes';
-import Img from "../../images/landingBg_980.jpg";
+import { Map as LeafletMap, TileLayer } from "react-leaflet";
 
-//import LocTwo from '../GeolocatedTwo'
+
 import Styled from 'styled-components';
 
+const Wrapper = Styled.div`
+    position: relative;
+    height: 100vh;
+    background-image: linear-gradient( rgba(206,176,213,1) 0%, rgba(132,120,181,1) 90% );
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-/* STYLED COMPONENTS */
-const StyledFlexForm = Styled.div`
-    flex-basis: 40%;
-    @media (max-width: 768px) {
-      flex-basis: 100%;
+    h1 {
+        font-size: 22px;
+        text-align: center;
+        color: #555;
+        font-weight: normal;
+    }
+
+    p {
+        font-size: 14px;
+        color: #555;
+        margin: 2px 0;
+    }
+
+    a {
+        color: #bcbcbc;
+        font-size: 12px;
     }
 `;
-const StyledTitle = Styled.h1`
-    font-size: 2em;
-    color: rgb(35, 123, 226);
-`;
+
+const Background = Styled.div`
+    z-index: 9999;
+    max-width: 90vw;
+    background-color: white;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+`
+
 const StyledInput = Styled.input`
-    padding: 4px;
-    margin: 4px    
+    box-sizing:border-box;
+    width: 100%;
+    font-family: 'Ubuntu', sans-serif;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #d3d3d3;
+    border-radius: 5px;
+    font-size: 18px;
+    background-color: #f7f7f7;
+    margin-bottom: 5px;
+
 `;
 const StyledSubmit = Styled.button`
-    padding: 6px 8px;
-    background-color: rgb(22, 88, 182);
-    color: rgb(244,244,244);
-    cursor: pointer;
-    margin: 12px 0;
+    font-family: 'Ubuntu', sans-serif;
+    width: 100%;
+    background-color: #333;
+    border: none;
+    color: white;
+    padding: 8px 0;
+    font-size: 14px;
     border-radius: 5px;
-    &:hover {
-        opacity: 0.9;        
-    }
+    margin: 5px 0;
 `;
-const StyledFbGlField = Styled.div`
-    padding: 8px 0;    
-    margin: 12px 12px 12px 0;
-    border-bottom: 2px solid rgb(247,247,247);
-    & form {
-      display: inline;
+
+const SocialLogin = Styled.div`
+    display: flex;
+    justify-content: space-between;
+    margin 40px 0 20px 0;
+
+    form {
+        width: 48%;
     }
-    & button {         
-      margin: 6px 22px 6px 0;
+
+    button {
+        font-family: 'Ubuntu', sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 45px;
+        border-radius: 5px;
+        border: none;
+        font-size: 14px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+
+        &:hover {
+            cursor: pointer;
+        }
     }
-`;
-const StyledImgDiv = Styled.div`    
-    min-height: 500px;
-    background-image: url( ${Img} );  
-    background-repeat: no-repeat;
-	background-position: center;	
-	-webkit-background-size: cover;
-	-moz-background-size: cover;
-	-o-background-size: cover;
-    background-size: cover;		
-    flex-basis: 59%;
-    border: 2px solid rgb(252,252,252);
-    
-    @media (max-width: 768px) {
-        display: none;
+
+    i {
+        font-size: 24px;
+        padding-right: 10px;
     }
 `;
 
+const FacebookButton = Styled.button`
+    width: 100%;
+    color: white;
+    background-color: #3C5A99;
+
+`;
+
+const GoogleButton = Styled.button`
+    width: 100%;
+    color: #2d2d2d;
+    background-color: white;
+
+
+    i {
+        color: #4885ed;
+    }
+`;
 
 const SignInPage = () => (
-
-    <React.Fragment>
-        <StyledFlexForm>
-            <StyledTitle>Sign in</StyledTitle><br />
-            <SignInForm />
-            <PasswordForgetLink />
-            <br />
-            <SignInGoogle />
-            <SignInFacebook /><br />
-            <SignUpLink />
-            <StyledFbGlField className="login-FB-GL">
-            </StyledFbGlField>
-        </StyledFlexForm>
-
-        <StyledImgDiv>
-        </StyledImgDiv>
-    </React.Fragment>
+    <Wrapper>
+        <LeafletMap
+            center={{lat: 59.334591, lng: 18.063240}}
+            zoom={14}
+            zoomControl={false}
+            animate={true}
+            style={{height: "100%", position: "absolute", width: "100%", opacity: "0.2", pointerEvents: "none"}}>
+            <TileLayer
+                attribution='Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url='https://{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png'
+            />
+        </LeafletMap>
+        <Background>
+            <h1>Sign in with</h1>
+            {/* <SocialLogin>
+                <SignInFacebook />
+                <SignInGoogle />
+            </SocialLogin > */}
+            <div>
+                <SignInForm />
+                <SignUpLink />
+            </div>
+        </Background>
+    </Wrapper>
 );
 
 
@@ -133,19 +193,21 @@ class SignInFormBase extends Component {
 
         return (
             <form onSubmit={this.onSubmit}>
+                <p>Email</p>
                 <StyledInput
                     name="email"
                     value={email}
                     onChange={this.onChange}
                     type="text"
-                    placeholder="Email Address"
                 /><br />
+                <p>Password 
+                     {/* <Link to={ROUTES.PASSWORD_FORGET}>Forgot?</Link> */}
+                </p>
                 <StyledInput
                     name="password"
                     value={password}
                     onChange={this.onChange}
                     type="password"
-                    placeholder="Password"
                 /><br />
                 <StyledSubmit disabled={isInvalid} type="submit">
                     Sign In
@@ -171,10 +233,6 @@ class SignInGoogleBase extends Component {
                     .set({
                         username: socialAuthUser.user.displayName,
                         email: socialAuthUser.user.email,
-                        roles: [],
-                        status: "Online",
-                        description: "",
-                        avatar: "girl",
                         statistics: {playedgames: 0, wongames: 0, walkeddistance: 0, points: 0},
                         position: { latitude: "0", longitude: "0" }
                     });
@@ -195,8 +253,7 @@ class SignInGoogleBase extends Component {
         const { error } = this.state;
         return (
             <form onSubmit={this.onSubmit}>
-                <button type="submit">Sign In with Google</button>
-                {error && <p>{error.message}</p>}
+                <GoogleButton type="submit"><i class="fab fa-google"></i>Google</GoogleButton>
             </form>
         );
     }
@@ -217,10 +274,6 @@ class SignInFacebookBase extends Component {
                     .set({
                         username: socialAuthUser.additionalUserInfo.profile.name,
                         email: socialAuthUser.additionalUserInfo.profile.email,
-                        roles: [],
-                        status: "Online",
-                        description: "",
-                        avatar: "girl",
                         statistics: {playedgames: 0, wongames: 0, walkeddistance: 0, points: 0},
                         position: { latitude: "0", longitude: "0" }
                     });
@@ -241,8 +294,7 @@ class SignInFacebookBase extends Component {
         const { error } = this.state;
         return (
             <form onSubmit={this.onSubmit}>
-                <button type="submit">Sign In with Facebook</button>
-                {error && <p>{error.message}</p>}
+                <FacebookButton type="submit"><i class="fab fa-facebook-square"></i>Facebook</FacebookButton>
             </form>
         );
     }

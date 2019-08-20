@@ -2,11 +2,9 @@ import React, { Component } from 'react';
 import Styled from 'styled-components';
 import GameMap from '../GameMap';
 import { withFirebase } from '../Firebase';
-import Chat from '../Chat';
 import GameScore from '../GameScores';
 import GameResults from '../GameResults';
 import { compose } from "recompose";
-// TESTING!
 import { Link } from 'react-router-dom';
 import * as ROUTES from '../../constants/routes';
 
@@ -354,12 +352,6 @@ class Game extends Component {
                             </StyledMap>
                             : null}
 
-
-
-                        {this.state.parts.chatBoard ? (
-                            <Chat />
-                        ) : null}
-                        
                     </StyledFlexContainer>
                 )}
             </AuthUserContext.Consumer>
