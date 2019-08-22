@@ -1,6 +1,3 @@
-# PROJECT PROMETRON
-A mobile game created by team-Cake.
-
 ## Requirements
 A mobile device with geolocation.
 
